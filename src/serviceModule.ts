@@ -63,6 +63,23 @@ export class ServiceModule {
   }
 
   /**
+   * Retrieves the value associated with the given service key or returns null if the service is not found.
+   *
+   * @param key - The key used to retrieve the associated service.
+   * @return A promise that resolves to the service value if found, or null if the service is not found.
+   */
+  public async getOrNull<T>(key: ServiceKey<T>): Promise<T | null> {
+    try {
+      return await this.get(key);
+    } catch (error) {
+      if (error instanceof ServiceFactoryNotFoundError) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  /**
    * Disposes of service factories within the specified scope or all factories if no scope is provided.
    *
    * This method is useful for cleaning up resources and instances held by service factories,

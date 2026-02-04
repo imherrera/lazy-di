@@ -340,6 +340,43 @@ describe('ServiceModule', () => {
     });
   });
 
+  describe('getOrNull', () => {
+    it('should return service value when factory exists', async () => {
+      const Key1 = new ServiceKey<string>('Key1');
+      const factory1 = ServiceFactory.oneShot({
+        provides: Key1,
+        dependsOn: [],
+        initialize: () => 'value1',
+      });
+
+      const module = ServiceModule.from([factory1]);
+      const value = await module.getOrNull(Key1);
+      expect(value).toBe('value1');
+    });
+
+    it('should return null when factory is not found', async () => {
+      const Key1 = new ServiceKey<string>('Key1');
+      const module = ServiceModule.from([]);
+
+      const value = await module.getOrNull(Key1);
+      expect(value).toBeNull();
+    });
+
+    it('should re-throw errors other than ServiceFactoryNotFoundError', async () => {
+      const Key1 = new ServiceKey<string>('Key1');
+      const factory1 = ServiceFactory.oneShot({
+        provides: Key1,
+        dependsOn: [],
+        initialize: () => {
+          throw new Error('Init error');
+        },
+      });
+
+      const module = ServiceModule.from([factory1]);
+      await expect(module.getOrNull(Key1)).rejects.toThrow('Init error');
+    });
+  });
+
   describe('dispose', () => {
     it('should call dispose on all factories when no scope is provided', async () => {
       const Key1 = new ServiceKey<string>('Key1');
